@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
+  // 测试连接
+  ping: () => ipcRenderer.invoke('ping'),
+  
   // 获取状态
   getStatus: () => ipcRenderer.invoke('get-status'),
   

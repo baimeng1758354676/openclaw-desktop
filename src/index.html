@@ -298,7 +298,21 @@
     });
 
     // 初始化
-    checkStatus();
+    async function init() {
+      try {
+        log('测试连接...');
+        const pingResult = await api.ping();
+        log('连接成功! ' + JSON.stringify(pingResult));
+        
+        // 连接成功后获取状态
+        checkStatus();
+      } catch (e) {
+        log('连接失败: ' + e.message);
+        console.error('连接失败:', e);
+      }
+    }
+    
+    init();
   </script>
 </body>
 </html>

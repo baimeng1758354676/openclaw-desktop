@@ -210,6 +210,11 @@ function createWindow() {
 }
 
 // IPC 处理
+ipcMain.handle('ping', async () => {
+  console.log('[OpenClaw] 收到 ping 请求');
+  return { pong: true, time: Date.now() };
+});
+
 ipcMain.handle('get-status', async () => {
   console.log('[OpenClaw] ========== 开始获取状态 ==========');
   
