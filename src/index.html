@@ -233,7 +233,9 @@
     }
     
     // 初始化
-    async function init() {
+    (async function init() {
+      showMain();
+      
       try {
         const status = await window.api.getStatus();
         
