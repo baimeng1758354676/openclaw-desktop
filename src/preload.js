@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('api', {
   // 首次配置
   runConfig: () => ipcRenderer.invoke('run-config'),
   
+  // 保存配置
+  saveConfig: (model, apiKey) => ipcRenderer.invoke('save-config', model, apiKey),
+  
   // 打开浏览器
   openBrowser: () => ipcRenderer.invoke('open-browser'),
   

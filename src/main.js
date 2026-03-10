@@ -181,6 +181,39 @@ async function runConfig() {
   }
 }
 
+// 保存配置
+async function saveConfig(model, apiKey) {
+  try {
+    const openclawDir = getOpenClawDir();
+    const configPath = path.join(openclawDir, 'config', 'default.json');
+    
+    // 读取现有配置
+    let config = {};
+    const fs = require('fs');
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+    
+    // 更新配置
+    config.model = model;
+    config.apiKey = apiKey;
+    
+    // 写入配置
+    const configDir = path.join(openclawDir, 'config');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+    
+    log.info(`配置已保存: model=${model}`);
+    return { success: true, message: '配置保存成功' };
+  } catch (e) {
+    log.error(`保存配置失败: ${e.message}`);
+    return { success: false, message: e.message };
+  }
+}
+
 // 打开浏览器
 function openBrowser() {
   shell.openExternal('http://127.0.0.1:18789');
@@ -272,6 +305,10 @@ ipcMain.handle('stop-gateway', async () => {
 
 ipcMain.handle('run-config', async () => {
   return await runConfig();
+});
+
+ipcMain.handle('save-config', async (event, model, apiKey) => {
+  return await saveConfig(model, apiKey);
 });
 
 ipcMain.handle('open-browser', async () => {
