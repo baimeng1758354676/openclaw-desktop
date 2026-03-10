@@ -211,6 +211,7 @@
     
     // 按钮事件
     document.getElementById('btn-settings').onclick = async function() {
+      alert('点击了快速配置'); // 调试
       // 快速配置：弹出简单输入框
       const apiKey = prompt('请输入 DeepSeek API Key:');
       if (apiKey) {
@@ -224,6 +225,7 @@
     };
     
     document.getElementById('btn-config').onclick = async function() {
+      alert('点击了完整配置'); // 调试
       // 完整配置：调用原来的bat
       try {
         await window.api.runConfig();
