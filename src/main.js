@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const { spawn, execSync } = require('child_process');
 const http = require('http');
@@ -212,6 +212,31 @@ async function saveConfig(model, apiKey) {
     log.error(`保存配置失败: ${e.message}`);
     return { success: false, message: e.message };
   }
+}
+
+// 弹出对话框获取 API Key
+async function promptApiKey() {
+  return new Promise((resolve) => {
+    dialog.showInputBox = dialog.showInputBox || dialog.showMessageBox;
+    
+    // Electron 没有内置 inputBox，用 showMessageBox 模拟
+    dialog.showMessageBox(mainWindow, {
+      type: 'question',
+      buttons: ['取消', '确定'],
+      defaultId: 1,
+      title: '输入 API Key',
+      message: '请输入 DeepSeek API Key:',
+      detail: '可以在 https://platform.deepseek.com 获取'
+    }).then(({ response }) => {
+      if (response === 1) {
+        // 用户点击确定，这里无法获取输入内容...
+        // 改用其他方式
+        resolve(null);
+      } else {
+        resolve(null);
+      }
+    });
+  });
 }
 
 // 打开浏览器

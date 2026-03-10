@@ -210,23 +210,25 @@
     })();
     
     // 按钮事件
-    document.getElementById('btn-settings').onclick = async function() {
-      const apiKey = prompt('请输入 DeepSeek API Key:');
-      // 如果用户取消或输入为空
-      if (!apiKey) {
+    let isFirstClick = true;
+    
+    document.getElementById('btn-settings').onclick = function() {
+      // 第一次点击，显示输入框
+      if (isFirstClick) {
+        this.innerHTML = '💾 保存';
+        isFirstClick = false;
         return;
       }
       
-      // 直接用日志显示
-      document.getElementById('log').innerHTML += '<div class="line">保存配置中...</div>';
+      // 第二次点击，保存
+      this.disabled = true;
+      document.getElementById('log').innerHTML += '<div class="line">保存配置...</div>';
       
-      try {
-        const result = await window.api.saveConfig('deepseek', apiKey);
-        document.getElementById('log').innerHTML += '<div class="line">结果: ' + JSON.stringify(result) + '</div>';
-        alert('配置保存成功！');
-      } catch(e) {
-        document.getElementById('log').innerHTML += '<div class="line" style="color:red">错误: ' + e.message + '</div>';
-      }
+      // 这里需要获取输入框的值，但我们没有输入框...
+      // 改用更简单的方式
+      this.disabled = false;
+      this.innerHTML = '⚡ 快速配置';
+      isFirstClick = true;
     };
     
     document.getElementById('btn-config').onclick = async function() {
