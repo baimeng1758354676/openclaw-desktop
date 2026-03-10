@@ -145,7 +145,7 @@
     }
   </style>
 </head>
-<body>
+<body onload="initApp()">
   <div class="container">
     <div class="header">
       <h1>🦞 OpenClaw</h1>
@@ -297,12 +297,12 @@
       log('[后端] ' + msg);
     });
 
-    // 初始化 - 使用 setTimeout 延迟执行
-    setTimeout(async () => {
+    // 全局初始化函数
+    window.initApp = async function() {
       try {
         console.log('>>> Step 1: ping...');
         const pingResult = await window.api.ping();
-        console.log('>>> Step 2: ping OK, result=' + JSON.stringify(pingResult));
+        console.log('>>> Step 2: ping OK');
         
         console.log('>>> Step 3: getStatus...');
         const status = await window.api.getStatus();
@@ -316,7 +316,7 @@
         console.error('>>> ERROR:', e);
         logEl.innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
       }
-    }, 1000);
+    };
   </script>
 </body>
 </html>
