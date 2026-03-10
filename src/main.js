@@ -18,7 +18,24 @@ let isGatewayRunning = false;
 function getOpenClawDir() {
   // 打包后 resources 目录，开发时用项目目录
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'openclaw');
+    // 尝试几种可能的路径
+    const paths = [
+      path.join(process.resourcesPath, 'openclaw'),
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'openclaw'),
+      path.join(path.dirname(process.execPath), 'resources', 'openclaw'),
+      path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'openclaw')
+    ];
+    
+    for (const p of paths) {
+      const fs = require('fs');
+      if (fs.existsSync(p)) {
+        log.info(`找到 OpenClaw 目录: ${p}`);
+        return p;
+      }
+    }
+    
+    log.error('未找到 OpenClaw 目录');
+    return paths[0];
   }
   return path.join(app.getAppPath(), 'openclaw');
 }
