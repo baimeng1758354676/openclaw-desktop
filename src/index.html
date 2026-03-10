@@ -211,12 +211,14 @@
     
     // 按钮事件
     document.getElementById('btn-settings').onclick = async function() {
-      // 快速配置：弹出简单输入框
+      alert('准备输入API Key...');
       const apiKey = prompt('请输入 DeepSeek API Key:');
+      alert('你输入的: ' + apiKey);
       if (apiKey && apiKey.trim()) {
         try {
-          await window.api.saveConfig('deepseek', apiKey.trim());
-          alert('配置保存成功！');
+          alert('开始保存配置...');
+          const result = await window.api.saveConfig('deepseek', apiKey.trim());
+          alert('保存结果: ' + JSON.stringify(result));
         } catch(e) {
           alert('保存失败: ' + e.message);
         }
