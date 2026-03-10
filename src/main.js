@@ -204,6 +204,26 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
+  // 加载完成后立即测试
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('[OpenClaw] 页面加载完成，开始测试...');
+    mainWindow.webContents.executeJavaScript(`
+      console.log('前端页面加载完成');
+      try {
+        window.api.ping().then(r => {
+          console.log('Ping成功:', r);
+          alert('连接成功! ' + JSON.stringify(r));
+        }).catch(e => {
+          console.error('Ping失败:', e);
+          alert('连接失败: ' + e.message);
+        });
+      } catch(e) {
+        console.error('调用失败:', e);
+        alert('调用失败: ' + e.message);
+      }
+    `);
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
