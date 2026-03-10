@@ -300,20 +300,21 @@
     // 初始化 - 使用 setTimeout 延迟执行
     setTimeout(async () => {
       try {
-        log('1. 测试连接...');
+        console.log('>>> Step 1: ping...');
         const pingResult = await window.api.ping();
-        log('2. 连接成功! ' + JSON.stringify(pingResult));
+        console.log('>>> Step 2: ping OK, result=' + JSON.stringify(pingResult));
         
-        log('3. 获取状态...');
+        console.log('>>> Step 3: getStatus...');
         const status = await window.api.getStatus();
-        log('4. 状态获取成功: ' + JSON.stringify(status));
+        console.log('>>> Step 4: getStatus OK, result=' + JSON.stringify(status));
         
         versionEl.textContent = status.version;
         updateStatus(status.running);
-        log('状态: ' + (status.running ? '已启动' : '已停止') + ', 版本: ' + status.version);
+        
+        logEl.innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
       } catch (e) {
-        log('错误: ' + e.message);
-        console.error('初始化错误:', e);
+        console.error('>>> ERROR:', e);
+        logEl.innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
       }
     }, 1000);
   </script>
