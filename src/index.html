@@ -187,8 +187,8 @@
   </div>
 
   <script>
-    // 直接执行初始化
-    (async function() {
+    // 初始化
+    async function init() {
       try {
         const status = await window.api.getStatus();
         
@@ -203,11 +203,65 @@
           statusEl.className = 'value status-stop';
         }
         
+        updateButtons(status.running);
+        
         document.getElementById('log').innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
       } catch (e) {
         document.getElementById('log').innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
       }
-    })();
+    }
+    
+    // 更新按钮状态
+    function updateButtons(running) {
+      document.getElementById('btn-start').disabled = running;
+      document.getElementById('btn-stop').disabled = !running;
+    }
+    
+    // 按钮事件
+    document.getElementById('btn-start').onclick = async function() {
+      this.disabled = true;
+      document.getElementById('log').innerHTML += '<div class="line">启动服务中...</div>';
+      try {
+        await window.api.startGateway();
+        document.getElementById('log').innerHTML += '<div class="line">启动命令已执行</div>';
+        setTimeout(init, 3000);
+      } catch(e) {
+        document.getElementById('log').innerHTML += '<div class="line" style="color:red">错误: ' + e.message + '</div>';
+        this.disabled = false;
+      }
+    };
+    
+    document.getElementById('btn-stop').onclick = async function() {
+      this.disabled = true;
+      document.getElementById('log').innerHTML += '<div class="line">停止服务...</div>';
+      try {
+        await window.api.stopGateway();
+        document.getElementById('log').innerHTML += '<div class="line">服务已停止</div>';
+        init();
+      } catch(e) {
+        document.getElementById('log').innerHTML += '<div class="line" style="color:red">错误: ' + e.message + '</div>';
+        this.disabled = false;
+      }
+    };
+    
+    document.getElementById('btn-config').onclick = async function() {
+      this.disabled = true;
+      document.getElementById('log').innerHTML += '<div class="line">开始首次配置...</div>';
+      try {
+        await window.api.runConfig();
+        document.getElementById('log').innerHTML += '<div class="line">配置完成</div>';
+      } catch(e) {
+        document.getElementById('log').innerHTML += '<div class="line" style="color:red">错误: ' + e.message + '</div>';
+      }
+      this.disabled = false;
+    };
+    
+    document.getElementById('btn-open').onclick = function() {
+      window.api.openBrowser();
+    };
+    
+    // 启动
+    init();
   </script>
 </body>
 </html>
