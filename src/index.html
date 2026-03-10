@@ -211,17 +211,21 @@
     
     // 按钮事件
     document.getElementById('btn-settings').onclick = async function() {
-      alert('准备输入API Key...');
       const apiKey = prompt('请输入 DeepSeek API Key:');
-      alert('你输入的: ' + apiKey);
-      if (apiKey && apiKey.trim()) {
-        try {
-          alert('开始保存配置...');
-          const result = await window.api.saveConfig('deepseek', apiKey.trim());
-          alert('保存结果: ' + JSON.stringify(result));
-        } catch(e) {
-          alert('保存失败: ' + e.message);
-        }
+      // 如果用户取消或输入为空
+      if (!apiKey) {
+        return;
+      }
+      
+      // 直接用日志显示
+      document.getElementById('log').innerHTML += '<div class="line">保存配置中...</div>';
+      
+      try {
+        const result = await window.api.saveConfig('deepseek', apiKey);
+        document.getElementById('log').innerHTML += '<div class="line">结果: ' + JSON.stringify(result) + '</div>';
+        alert('配置保存成功！');
+      } catch(e) {
+        document.getElementById('log').innerHTML += '<div class="line" style="color:red">错误: ' + e.message + '</div>';
       }
     };
     
