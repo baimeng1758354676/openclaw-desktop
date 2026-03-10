@@ -300,14 +300,40 @@
     // 全局初始化函数
     window.initApp = async function() {
       try {
-        const pingResult = await window.api.ping();
-        const status = await window.api.getStatus();
+        alert('start');
         
-        versionEl.textContent = status.version;
-        updateStatus(status.running);
-        logEl.innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
+        const statusEl = document.getElementById('status');
+        const versionEl = document.getElementById('version');
+        const logEl = document.getElementById('log');
+        
+        alert('elements: ' + statusEl + ', ' + versionEl + ', ' + logEl);
+        
+        const pingResult = await window.api.ping();
+        alert('ping OK');
+        
+        const status = await window.api.getStatus();
+        alert('status OK: ' + JSON.stringify(status));
+        
+        if (versionEl) versionEl.textContent = status.version;
+        
+        // 更新状态
+        if (statusEl) {
+          if (status.running) {
+            statusEl.textContent = '已启动';
+            statusEl.className = 'value status-ok';
+          } else {
+            statusEl.textContent = '已停止';
+            statusEl.className = 'value status-stop';
+          }
+        }
+        
+        if (logEl) {
+          logEl.innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
+        }
+        
+        alert('done');
       } catch (e) {
-        logEl.innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
+        alert('ERROR: ' + e.message);
       }
     };
   </script>
