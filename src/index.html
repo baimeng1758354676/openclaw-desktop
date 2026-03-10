@@ -226,10 +226,16 @@
 
     // 获取状态
     async function checkStatus() {
-      const status = await api.getStatus();
-      versionEl.textContent = status.version;
-      updateStatus(status.running);
-      log(`状态: ${status.running ? '已启动' : '已停止'}, 版本: ${status.version}`);
+      try {
+        log('正在获取状态...');
+        const status = await api.getStatus();
+        versionEl.textContent = status.version;
+        updateStatus(status.running);
+        log(`状态: ${status.running ? '已启动' : '已停止'}, 版本: ${status.version}`);
+      } catch (e) {
+        log('获取状态失败: ' + e.message);
+        console.error('获取状态失败:', e);
+      }
     }
 
     // 启动
