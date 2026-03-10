@@ -205,9 +205,29 @@ function createWindow() {
 
 // IPC 处理
 ipcMain.handle('get-status', async () => {
-  const running = await checkGatewayStatus();
+  console.log('[OpenClaw] 开始获取状态...');
+  
+  let running = false;
+  let version = '未知';
+  
+  try {
+    console.log('[OpenClaw] 检查服务状态...');
+    running = await checkGatewayStatus();
+    console.log(`[OpenClaw] 服务状态: ${running}`);
+  } catch (e) {
+    console.log(`[OpenClaw] 检查服务状态失败: ${e.message}`);
+  }
+  
+  try {
+    console.log('[OpenClaw] 获取版本...');
+    version = getVersion();
+    console.log(`[OpenClaw] 版本: ${version}`);
+  } catch (e) {
+    console.log(`[OpenClaw] 获取版本失败: ${e.message}`);
+  }
+  
   isGatewayRunning = running;
-  const version = getVersion();
+  
   return { 
     running, 
     version,
