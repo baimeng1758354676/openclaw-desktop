@@ -74,20 +74,46 @@ function runBatScript(scriptName) {
     const scriptPath = path.join(openclawDir, scriptName);
     
     log.info(`运行脚本: ${scriptPath}`);
+    console.log(`[OpenClaw] 运行脚本: ${scriptPath}`);
     
-    const proc = spawn('cmd', ['/c', scriptPath], {
+    // 先检查文件是否存在
+    const fs = require('fs');
+    if (!fs.existsSync(scriptPath)) {
+      const error = `脚本不存在: ${scriptPath}`;
+      log.error(error);
+      console.log(`[OpenClaw] 错误: ${error}`);
+      reject(new Error(error));
+      return;
+    }
+    
+    const proc = spawn('cmd', ['/c', 'start', '""', scriptPath], {
       cwd: openclawDir,
-      stdio: 'inherit',
-      shell: true
+      stdio: 'pipe',
+      shell: true,
+      detached: true
+    });
+
+    let output = '';
+    proc.stdout.on('data', (data) => {
+      output += data.toString();
+      console.log(`[OpenClaw stdout] ${data}`);
+    });
+    
+    proc.stderr.on('data', (data) => {
+      output += data.toString();
+      console.log(`[OpenClaw stderr] ${data}`);
     });
 
     proc.on('close', (code) => {
       log.info(`脚本 ${scriptName} 执行完成，退出码: ${code}`);
+      console.log(`[OpenClaw] 脚本执行完成，退出码: ${code}`);
       resolve(code);
     });
 
     proc.on('error', (err) => {
-      log.error(`脚本执行失败: ${err.message}`);
+      const error = `脚本执行失败: ${err.message}`;
+      log.error(error);
+      console.log(`[OpenClaw] 错误: ${error}`);
       reject(err);
     });
   });
@@ -100,10 +126,22 @@ async function startGateway() {
   }
 
   try {
+    log.info('开始启动 Gateway 服务...');
+    console.log('[OpenClaw] 开始启动 Gateway 服务...');
+    
+    const openclawDir = getOpenClawDir();
+    console.log(`[OpenClaw] OpenClaw 目录: ${openclawDir}`);
+    
     await runBatScript('02_启动服务.bat');
     isGatewayRunning = true;
+    
+    log.info('Gateway 服务已启动');
+    console.log('[OpenClaw] Gateway 服务已启动');
+    
     return { success: true, message: '服务已启动' };
   } catch (e) {
+    log.error(`启动失败: ${e.message}`);
+    console.log(`[OpenClaw] 启动失败: ${e.message}`);
     return { success: false, message: e.message };
   }
 }
@@ -201,6 +239,15 @@ setInterval(async () => {
     mainWindow.webContents.send('status-changed', running);
   }
 }, 3000);
+
+// 转发 console.log 到界面
+const originalConsoleLog = console.log;
+console.log = function(...args) {
+  originalConsoleLog.apply(console, args);
+  if (mainWindow) {
+    mainWindow.webContents.send('console-log', args.join(' '));
+  }
+};
 
 // 全局异常处理
 process.on('uncaughtException', (error) => {

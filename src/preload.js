@@ -19,5 +19,10 @@ contextBridge.exposeInMainWorld('api', {
   // 监听状态变化
   onStatusChanged: (callback) => {
     ipcRenderer.on('status-changed', (event, running) => callback(running));
+  },
+  
+  // 监听控制台日志
+  onConsoleLog: (callback) => {
+    ipcRenderer.on('console-log', (event, msg) => callback(msg));
   }
 });

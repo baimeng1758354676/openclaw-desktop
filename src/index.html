@@ -286,6 +286,11 @@
       updateStatus(running);
     });
 
+    // 监听控制台日志
+    api.onConsoleLog((msg) => {
+      log('[后端] ' + msg);
+    });
+
     // 初始化
     checkStatus();
   </script>
