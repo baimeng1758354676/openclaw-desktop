@@ -1,0 +1,56 @@
+{
+  "name": "openclaw-desktop",
+  "version": "1.0.0",
+  "description": "OpenClaw 桌面版 - 一键启动，无需配置",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "author": "OpenClaw CN",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "electron-log": "^5.0.0"
+  },
+  "build": {
+    "appId": "org.openclaw.desktop",
+    "productName": "OpenClaw",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OpenClaw"
+    },
+    "files": [
+      "src/**/*",
+      "openclaw/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "openclaw/",
+        "to": "openclaw/",
+        "filter": ["**/*"]
+      }
+    ]
+  }
+}

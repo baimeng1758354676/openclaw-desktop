@@ -1,0 +1,206 @@
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const path = require('path');
+const { spawn, execSync } = require('child_process');
+const http = require('http');
+const log = require('electron-log');
+
+// 配置日志
+log.transports.file.level = 'info';
+log.transports.file.maxSize = 5 * 1024 * 1024;
+log.info('OpenClaw 桌面版启动...');
+
+// 全局变量
+let mainWindow = null;
+let gatewayProcess = null;
+let isGatewayRunning = false;
+
+// 获取 OpenClaw 目录
+function getOpenClawDir() {
+  // 打包后 resources 目录，开发时用项目目录
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'openclaw');
+  }
+  return path.join(app.getAppPath(), 'openclaw');
+}
+
+// 检测服务是否运行
+function checkGatewayStatus() {
+  return new Promise((resolve) => {
+    const req = http.get('http://127.0.0.1:18789', (res) => {
+      resolve(true);
+    });
+    req.on('error', () => {
+      resolve(false);
+    });
+    req.setTimeout(2000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+// 获取 OpenClaw 版本
+function getVersion() {
+  try {
+    const openclawDir = getOpenClawDir();
+    const packageJson = require(path.join(openclawDir, 'package.json'));
+    return packageJson.version || '未知';
+  } catch (e) {
+    return '未知';
+  }
+}
+
+// 运行 BAT 脚本
+function runBatScript(scriptName) {
+  return new Promise((resolve, reject) => {
+    const openclawDir = getOpenClawDir();
+    const scriptPath = path.join(openclawDir, scriptName);
+    
+    log.info(`运行脚本: ${scriptPath}`);
+    
+    const proc = spawn('cmd', ['/c', scriptPath], {
+      cwd: openclawDir,
+      stdio: 'inherit',
+      shell: true
+    });
+
+    proc.on('close', (code) => {
+      log.info(`脚本 ${scriptName} 执行完成，退出码: ${code}`);
+      resolve(code);
+    });
+
+    proc.on('error', (err) => {
+      log.error(`脚本执行失败: ${err.message}`);
+      reject(err);
+    });
+  });
+}
+
+// 启动服务
+async function startGateway() {
+  if (isGatewayRunning) {
+    return { success: true, message: '服务已在运行' };
+  }
+
+  try {
+    await runBatScript('02_启动服务.bat');
+    isGatewayRunning = true;
+    return { success: true, message: '服务已启动' };
+  } catch (e) {
+    return { success: false, message: e.message };
+  }
+}
+
+// 停止服务
+async function stopGateway() {
+  if (!isGatewayRunning) {
+    return { success: true, message: '服务未运行' };
+  }
+
+  try {
+    // 查找并终止 node 进程
+    const { execSync } = require('child_process');
+    execSync('taskkill /F /IM node.exe /T', { stdio: 'ignore' });
+    isGatewayRunning = false;
+    log.info('Gateway 服务已停止');
+    return { success: true, message: '服务已停止' };
+  } catch (e) {
+    isGatewayRunning = false;
+    return { success: true, message: '服务已停止' };
+  }
+}
+
+// 首次配置
+async function runConfig() {
+  try {
+    await runBatScript('01_首次配置.bat');
+    return { success: true, message: '配置完成' };
+  } catch (e) {
+    return { success: false, message: e.message };
+  }
+}
+
+// 打开浏览器
+function openBrowser() {
+  shell.openExternal('http://127.0.0.1:18789');
+}
+
+// 创建窗口
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 500,
+    height: 450,
+    resizable: false,
+    maximizable: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    },
+    title: 'OpenClaw',
+    backgroundColor: '#1a1a2e'
+  });
+
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+// IPC 处理
+ipcMain.handle('get-status', async () => {
+  const running = await checkGatewayStatus();
+  isGatewayRunning = running;
+  const version = getVersion();
+  return { 
+    running, 
+    version,
+    port: 18789 
+  };
+});
+
+ipcMain.handle('start-gateway', async () => {
+  return await startGateway();
+});
+
+ipcMain.handle('stop-gateway', async () => {
+  return await stopGateway();
+});
+
+ipcMain.handle('run-config', async () => {
+  return await runConfig();
+});
+
+ipcMain.handle('open-browser', async () => {
+  openBrowser();
+});
+
+// 定时检查状态
+setInterval(async () => {
+  if (mainWindow) {
+    const running = await checkGatewayStatus();
+    isGatewayRunning = running;
+    mainWindow.webContents.send('status-changed', running);
+  }
+}, 3000);
+
+// 全局异常处理
+process.on('uncaughtException', (error) => {
+  log.error('未捕获异常:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  log.error('未处理 Promise 拒绝:', reason);
+});
+
+app.whenReady().then(() => {
+  log.info('创建窗口...');
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
