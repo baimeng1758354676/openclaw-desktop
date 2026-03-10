@@ -40,13 +40,19 @@ function getOpenClawDir() {
   return path.join(app.getAppPath(), 'openclaw');
 }
 
-// 检测服务是否运行
+// 检测服务是否运行 - 加超时
 function checkGatewayStatus() {
   return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      resolve(false);
+    }, 3000);
+    
     const req = http.get('http://127.0.0.1:18789', (res) => {
+      clearTimeout(timeout);
       resolve(true);
     });
     req.on('error', () => {
+      clearTimeout(timeout);
       resolve(false);
     });
     req.setTimeout(2000, () => {
@@ -205,7 +211,7 @@ function createWindow() {
 
 // IPC 处理
 ipcMain.handle('get-status', async () => {
-  console.log('[OpenClaw] 开始获取状态...');
+  console.log('[OpenClaw] ========== 开始获取状态 ==========');
   
   let running = false;
   let version = '未知';
@@ -228,11 +234,16 @@ ipcMain.handle('get-status', async () => {
   
   isGatewayRunning = running;
   
-  return { 
+  const result = { 
     running, 
     version,
     port: 18789 
   };
+  
+  console.log('[OpenClaw] 返回结果:', JSON.stringify(result));
+  console.log('[OpenClaw] ========== 获取状态完成 ==========');
+  
+  return result;
 });
 
 ipcMain.handle('start-gateway', async () => {
