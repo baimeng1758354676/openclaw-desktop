@@ -299,23 +299,14 @@
 
     // 全局初始化函数
     window.initApp = async function() {
-      alert('Step 1: 开始');
       try {
-        alert('Step 2: 调用 ping');
         const pingResult = await window.api.ping();
-        alert('Step 3: ping OK, ' + JSON.stringify(pingResult));
-        
-        alert('Step 4: 调用 getStatus');
         const status = await window.api.getStatus();
-        alert('Step 5: getStatus OK, ' + JSON.stringify(status));
         
         versionEl.textContent = status.version;
         updateStatus(status.running);
-        
         logEl.innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
       } catch (e) {
-        alert('ERROR: ' + e.message);
-        console.error('>>> ERROR:', e);
         logEl.innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
       }
     };
