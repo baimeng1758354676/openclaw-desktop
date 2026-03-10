@@ -145,14 +145,7 @@
     }
   </style>
 </head>
-<body>
-<script>
-  alert('页面加载中...');
-  window.onload = function() {
-    alert('onload 触发!');
-    initApp();
-  };
-</script>
+<body onload="window.initApp()">
   <div class="container">
     <div class="header">
       <h1>🦞 OpenClaw</h1>
@@ -306,20 +299,22 @@
 
     // 全局初始化函数
     window.initApp = async function() {
+      alert('Step 1: 开始');
       try {
-        console.log('>>> Step 1: ping...');
+        alert('Step 2: 调用 ping');
         const pingResult = await window.api.ping();
-        console.log('>>> Step 2: ping OK');
+        alert('Step 3: ping OK, ' + JSON.stringify(pingResult));
         
-        console.log('>>> Step 3: getStatus...');
+        alert('Step 4: 调用 getStatus');
         const status = await window.api.getStatus();
-        console.log('>>> Step 4: getStatus OK, result=' + JSON.stringify(status));
+        alert('Step 5: getStatus OK, ' + JSON.stringify(status));
         
         versionEl.textContent = status.version;
         updateStatus(status.running);
         
         logEl.innerHTML = '<div class="line">OK! Version: ' + status.version + '</div><div class="line">Status: ' + (status.running ? 'Running' : 'Stopped') + '</div>';
       } catch (e) {
+        alert('ERROR: ' + e.message);
         console.error('>>> ERROR:', e);
         logEl.innerHTML = '<div class="line" style="color:red">ERROR: ' + e.message + '</div>';
       }
