@@ -300,15 +300,20 @@
     // 初始化
     async function init() {
       try {
-        log('测试连接...');
+        log('1. 测试连接...');
         const pingResult = await api.ping();
-        log('连接成功! ' + JSON.stringify(pingResult));
+        log('2. 连接成功! ' + JSON.stringify(pingResult));
         
-        // 连接成功后获取状态
-        checkStatus();
+        log('3. 获取状态...');
+        const status = await api.getStatus();
+        log('4. 状态获取成功: ' + JSON.stringify(status));
+        
+        versionEl.textContent = status.version;
+        updateStatus(status.running);
+        log('状态: ' + (status.running ? '已启动' : '已停止') + ', 版本: ' + status.version);
       } catch (e) {
-        log('连接失败: ' + e.message);
-        console.error('连接失败:', e);
+        log('错误: ' + e.message);
+        console.error('初始化错误:', e);
       }
     }
     
