@@ -145,7 +145,14 @@
     }
   </style>
 </head>
-<body onload="initApp()">
+<body>
+<script>
+  alert('页面加载中...');
+  window.onload = function() {
+    alert('onload 触发!');
+    initApp();
+  };
+</script>
   <div class="container">
     <div class="header">
       <h1>🦞 OpenClaw</h1>
