@@ -297,15 +297,15 @@
       log('[后端] ' + msg);
     });
 
-    // 初始化
-    async function init() {
+    // 初始化 - 使用 setTimeout 延迟执行
+    setTimeout(async () => {
       try {
         log('1. 测试连接...');
-        const pingResult = await api.ping();
+        const pingResult = await window.api.ping();
         log('2. 连接成功! ' + JSON.stringify(pingResult));
         
         log('3. 获取状态...');
-        const status = await api.getStatus();
+        const status = await window.api.getStatus();
         log('4. 状态获取成功: ' + JSON.stringify(status));
         
         versionEl.textContent = status.version;
@@ -315,9 +315,7 @@
         log('错误: ' + e.message);
         console.error('初始化错误:', e);
       }
-    }
-    
-    init();
+    }, 1000);
   </script>
 </body>
 </html>
